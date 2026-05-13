@@ -18,3 +18,10 @@ services:
       - "traefik.http.routers.whoami.rule=PathPrefix(`/whoami`)"
       - "traefik.http.middlewares.whoami-stripprefix.stripprefix.prefixes=/whoami"
       # - "traefik.http.routers.whoami.entrypoints=web"
+  torch:
+    build: https://github.com/jkulton/torch.git
+    restart: unless-stopped
+    ports:
+      - "5005:5005"
+    volumes:
+      - /mnt/user/appdata/configs/torch.yaml:/config.yaml
