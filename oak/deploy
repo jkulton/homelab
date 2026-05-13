@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ -z "${OAK_REMOTE_HOST:-}" ]]; then
+    echo "Error: environment variable OAK_REMOTE_HOST must be set"
+    exit 1
+fi
+
+REMOTE_HOST=$OAK_REMOTE_HOST
+REMOTE_CONFIG_PATH="/mnt/user/appdata/configs"
+LOCAL_CONFIG_PATH="./configs"
+COMPOSE_FILE="./docker-compose.yml"
+SERVICE_NAME="${1:-}"
+
+# sync configs
+echo "Syncing configs to ${REMOTE_HOST}..."
+scp -r "${LOCAL_CONFIG_PATH}/." "${REMOTE_HOST}:${REMOTE_CONFIG_PATH}/"
+
+# deploy
+if [[ -n "$SERVICE_NAME" ]]; then
+  echo "Deploying service: ${SERVICE_NAME}..."
+  docker --context oak compose -f "${COMPOSE_FILE}" up -d --force-recreate "${SERVICE_NAME}"
+else
+  echo "Deploying all services..."
+  docker --context oak compose -f "${COMPOSE_FILE}" up -d --force-recreate
+fi
+
+echo "Done."
